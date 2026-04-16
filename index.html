@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>SMLT · Super Mega List Team</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&family=Orbitron:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.2s, border-color 0.2s, color 0.2s; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+    :root {
+      --bg-primary: #0a0c12;
+      --bg-secondary: #10131c;
+      --card-bg: #151824;
+      --card-border: #2d2f3e;
+      --text-primary: #f0f3fa;
+      --text-secondary: #9ca3af;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.5);
+      --accent-gradient: linear-gradient(135deg, #10b981, #059669);
+      --danger: #ef4444;
+      --button-bg: #1e1f2c;
+      --input-bg: #20222e;
+    }
+    body.light {
+      --bg-primary: #f3f4f6;
+      --bg-secondary: #ffffff;
+      --card-bg: #ffffff;
+      --card-border: #e5e7eb;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --accent: #059669;
+      --accent-glow: rgba(5, 150, 105, 0.3);
+      --button-bg: #e5e7eb;
+      --input-bg: #f9fafb;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--accent);
+    }
+    .logo h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .theme-toggle {
+      background: var(--button-bg);
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+      color: var(--text-primary);
+    }
+    .nav-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .nav-btn {
+      background: var(--button-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      color: var(--text-primary);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .nav-btn.active { background: var(--accent-gradient); border-color: var(--accent); }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: var(--button-bg);
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      border: 1px solid var(--card-border);
+    }
+    .user-name-clickable { cursor: pointer; font-weight: 600; padding: 4px 8px; border-radius: 20px; }
+    .user-name-clickable:hover { background: var(--accent); color: white; }
+    .btn-outline {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.3rem 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--accent-gradient); color: white; border: none; padding: 10px 16px; border-radius: 30px; cursor: pointer; }
+    .panel { display: none; }
+    .panel.active-panel { display: block; }
+    .card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 1.5rem;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      margin-bottom: 1.5rem;
+    }
+    .leaderboard-table { width: 100%; border-collapse: collapse; }
+    .leaderboard-table th { text-align: left; padding: 12px 8px; color: var(--text-secondary); border-bottom: 1px solid var(--card-border); }
+    .leaderboard-table td { padding: 12px 8px; border-bottom: 1px solid var(--card-border); }
+    .player-link { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    .profile-header { display: flex; gap: 2rem; margin-bottom: 2rem; }
+    .profile-stats { display: flex; gap: 2rem; }
+    .stat-box { text-align: center; }
+    .category-section { margin-top: 1.5rem; }
+    .category-title { font-family: 'Orbitron', monospace; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+    .badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
+    .demon-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .demon-badge { background: var(--button-bg); padding: 4px 12px; border-radius: 30px; font-size: 0.85rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group input, .form-group select {
+      background: var(--input-bg); border: 1px solid var(--card-border);
+      padding: 10px 14px; border-radius: 24px; width: 100%; color: var(--text-primary);
+    }
+    .discord-auth-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #5865F2;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo"><h1><i class="fas fa-dragon"></i> SMLT</h1></div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <button id="themeToggle" class="theme-toggle"><i class="fas fa-moon"></i></button>
+      <div class="nav-buttons">
+        <button class="nav-btn active" data-page="leaderboard"><i class="fas fa-trophy"></i> Лист</button>
+        <button class="nav-btn" data-page="profile"><i class="fas fa-user"></i> Профиль</button>
+      </div>
+      <div class="user-info" id="userInfo">
+        <span id="userNameDisplay" class="user-name-clickable">Гость</span>
+        <button id="authBtn" class="btn-outline">Вход</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЛИДЕРБОРД -->
+  <div id="leaderboardPage" class="panel active-panel">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2><i class="fas fa-globe"></i> Все страны</h2>
+        <button id="syncNowBtn" class="btn-outline"><i class="fas fa-sync-alt"></i> Обновить рейтинг</button>
+      </div>
+      <table class="leaderboard-table">
+        <thead><tr><th>#</th><th>Игрок</th><th>Баллы</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ПРОФИЛЬ -->
+  <div id="profilePage" class="panel">
+    <div id="profileContent" class="card"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ---------- КОНФИГУРАЦИЯ DISCORD OAUTH ----------
+    const DISCORD_CLIENT_ID = '1494249726089105539'; // Замените на ваш Client ID
+    const REDIRECT_URI = window.location.origin + window.location.pathname; // текущий URL
+
+    // ---------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ----------
+    let users = [];            // { id, username, gdlNick, discordId, role, logs }
+    let levels = [];           // { id, name, position, author }
+    let records = [];          // { id, userId, levelId, percent, videoLink, status, timestamp }
+    let currentUser = null;
+
+    const ADMIN = { id: 'admin', username: 'admin', gdlNick: 'Admin', discordId: '', role: 'admin', logs: [] };
+
+    // ---------- ФОРМУЛА ОЧКОВ P(h) ----------
+    function getLevelPoints(position, totalLevels) {
+      const h = position;
+      if (h >= 1 && h <= 8) return 1040 - 40 * h;
+      if (h > 8 && h <= 10) return 1200 - 60 * h;
+      if (h > 10 && h <= 20) return 800 - 20 * h;
+      if (h > 20 && h <= 50) return 480 - 4 * h;
+      if (h > 50 && h <= 75) return 480 - 8 * h;
+      if (h > 75 && h <= 150) return 155 - h;
+      if (h > 150 && h <= 250) return 5 - 0.4 * Math.floor((h - 150) / 10);
+      if (h > 250) {
+        const H = totalLevels || 300;
+        return Math.max(0.05, 1 - 0.01 * (95 * (h - 250) / (H - 250)));
+      }
+      return 0;
+    }
+
+    function calculateUserPoints(userId) {
+      const userRecords = records.filter(r => r.userId === userId && r.status === 'approved');
+      return userRecords.reduce((sum, rec) => {
+        const level = levels.find(l => l.id === rec.levelId);
+        return sum + (level ? getLevelPoints(level.position, levels.length) : 0);
+      }, 0);
+    }
+
+    function getRankedPlayers() {
+      return users
+        .filter(u => u.id !== ADMIN.id)
+        .map(u => ({ ...u, points: calculateUserPoints(u.id) }))
+        .filter(u => u.points > 0)
+        .sort((a, b) => b.points - a.points);
+    }
+
+    // ---------- СОХРАНЕНИЕ / ЗАГРУЗКА ----------
+    function saveData() {
+      localStorage.setItem('smlt_users', JSON.stringify(users.filter(u => u.id !== ADMIN.id)));
+      localStorage.setItem('smlt_levels', JSON.stringify(levels));
+      localStorage.setItem('smlt_records', JSON.stringify(records));
+    }
+    function loadData() {
+      const storedUsers = JSON.parse(localStorage.getItem('smlt_users') || '[]');
+      users = [ADMIN, ...storedUsers];
+      levels = JSON.parse(localStorage.getItem('smlt_levels') || '[]');
+      records = JSON.parse(localStorage.getItem('smlt_records') || '[]');
+      
+      // Демо-уровни, если пусто
+      if (levels.length === 0) {
+        levels = [
+          { id: 'l1', name: 'Acheron', position: 1, author: 'ryamu' },
+          { id: 'l2', name: 'Silent clubstep', position: 2, author: 'TheRealSailent' },
+          { id: 'l3', name: 'Abyss of Darkness', position: 3, author: 'Exen' },
+          { id: 'l4', name: 'Slaughterhouse', position: 4, author: 'icedcave' },
+          { id: 'l5', name: 'Kyouki', position: 5, author: 'DemN' },
+        ];
+        saveData();
+      }
+
+      const sess = sessionStorage.getItem('smlt_currentUser');
+      if (sess) {
+        currentUser = JSON.parse(sess);
+        const fresh = users.find(u => u.id === currentUser.id);
+        if (fresh) currentUser = fresh;
+      }
+    }
+
+    // ---------- РЕНДЕР ЛИДЕРБОРДА ----------
+    function renderLeaderboard() {
+      const ranked = getRankedPlayers();
+      const tbody = document.getElementById('leaderboardBody');
+      tbody.innerHTML = ranked.map((p, idx) => `
+        <tr>
+          <td>${idx+1}</td>
+          <td><span class="player-link" onclick="window.showPlayerProfile('${p.id}')">${escapeHtml(p.username)}</span></td>
+          <td>${p.points.toFixed(2)}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="3">Нет игроков с рекордами</td></tr>';
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+    }
+
+    // ---------- ПРОФИЛЬ ----------
+    window.showPlayerProfile = (userId) => {
+      const player = users.find(u => u.id === userId);
+      if (!player) return;
+      const isOwnProfile = currentUser && currentUser.id === userId;
+      const rank = getRankedPlayers().findIndex(p => p.id === userId) + 1;
+      const points = calculateUserPoints(userId);
+      
+      const userRecords = records.filter(r => r.userId === userId && r.status === 'approved');
+      const completedLevels = userRecords.map(r => levels.find(l => l.id === r.levelId)).filter(l => l);
+      const main = completedLevels.filter(l => l.position <= 75);
+      const extended = completedLevels.filter(l => l.position > 75 && l.position <= 150);
+      const advanced = completedLevels.filter(l => l.position > 150 && l.position <= 300);
+      const unbounded = completedLevels.filter(l => l.position > 300);
+      const hardest = completedLevels.length ? completedLevels.reduce((a,b) => a.position < b.position ? a : b) : null;
+
+      const profileDiv = document.getElementById('profileContent');
+      let html = `
+        <h2>${escapeHtml(player.username)} ${player.role === 'admin' ? '<span class="badge">ADMIN</span>' : ''}</h2>
+        <div class="profile-header">
+          <div class="profile-stats">
+            <div class="stat-box"><strong>#${rank || '-'}</strong><br>Место</div>
+            <div class="stat-box"><strong>${points.toFixed(2)}</strong><br>Баллы</div>
+          </div>
+        </div>
+        ${hardest ? `<div style="margin: 1rem 0;"><i class="fas fa-skull"></i> Сложнейший уровень: <strong>${escapeHtml(hardest.name)}</strong> (#${hardest.position})</div>` : ''}
+        <div class="category-section"><div class="category-title">Main List (#1-75) <span class="badge">${main.length}</span></div><div class="demon-list">${main.map(l => `<span class="demon-badge">${escapeHtml(l.name)}</span>`).join('') || '—'}</div></div>
+        <div class="category-section"><div class="category-title">Extended List (#76-150) <span class="badge">${extended.length}</span></div><div class="demon-list">${extended.map(l => `<span class="demon-badge">${escapeHtml(l.name)}</span>`).join('') || '—'}</div></div>
+        <div class="category-section"><div class="category-title">Advanced List (#151-300) <span class="badge">${advanced.length}</span></div><div class="demon-list">${advanced.map(l => `<span class="demon-badge">${escapeHtml(l.name)}</span>`).join('') || '—'}</div></div>
+        <div class="category-section"><div class="category-title">Unbounded List (#301+) <span class="badge">${unbounded.length}</span></div><div class="demon-list">${unbounded.map(l => `<span class="demon-badge">${escapeHtml(l.name)}</span>`).join('') || '—'}</div></div>
+      `;
+
+      if (isOwnProfile) {
+        html += `<hr style="margin: 2rem 0 1rem;"><h3>Настройки аккаунта</h3>`;
+        html += `
+          <div class="form-group">
+            <label>GDL ник</label>
+            <input id="editGdlNick" value="${escapeHtml(currentUser.gdlNick || '')}" placeholder="Ваш ник в Geometry Dash">
+          </div>
+          <div class="form-group">
+            <label>Discord (привязка)</label>
+            <div style="display: flex; gap: 8px;">
+              <input id="editDiscordId" value="${escapeHtml(currentUser.discordId || '')}" readonly style="flex:1;" placeholder="Не привязан">
+              ${currentUser.discordId ? 
+                `<button class="btn-outline" onclick="window.unlinkDiscord()">Отвязать</button>` : 
+                `<a href="${getDiscordAuthUrl()}" class="discord-auth-btn"><i class="fab fa-discord"></i> Привязать Discord</a>`
+              }
+            </div>
+          </div>
+          <button class="btn-primary" onclick="window.saveProfileSettings()">Сохранить изменения</button>
+        `;
+        // Админка
+        if (currentUser.role === 'admin') {
+          html += `<div class="admin-panel" style="margin-top:2rem;"><h3>Администрирование</h3>
+            <button class="btn-outline" onclick="window.addDemoLevel()">Добавить демо-уровень</button>
+            <button class="btn-outline" onclick="window.addDemoRecord()">Добавить тестовый рекорд</button>
+          </div>`;
+        }
+      }
+
+      profileDiv.innerHTML = html;
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+      document.getElementById('profilePage').classList.add('active-panel');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-page="profile"]').classList.add('active');
+    };
+
+    // ---------- НАСТРОЙКИ ПРОФИЛЯ ----------
+    window.saveProfileSettings = () => {
+      if (!currentUser) return;
+      const gdlNick = document.getElementById('editGdlNick').value.trim();
+      const user = users.find(u => u.id === currentUser.id);
+      if (user) {
+        user.gdlNick = gdlNick;
+        currentUser.gdlNick = gdlNick;
+        sessionStorage.setItem('smlt_currentUser', JSON.stringify(currentUser));
+        saveData();
+        showPlayerProfile(currentUser.id);
+        updateUI();
+        renderLeaderboard();
+      }
+    };
+
+    window.unlinkDiscord = () => {
+      if (!currentUser) return;
+      const user = users.find(u => u.id === currentUser.id);
+      if (user) {
+        user.discordId = '';
+        currentUser.discordId = '';
+        sessionStorage.setItem('smlt_currentUser', JSON.stringify(currentUser));
+        saveData();
+        showPlayerProfile(currentUser.id);
+        updateUI();
+      }
+    };
+
+    // ---------- DISCORD OAUTH ----------
+    function getDiscordAuthUrl() {
+      const params = new URLSearchParams({
+        client_id: DISCORD_CLIENT_ID,
+        redirect_uri: REDIRECT_URI,
+        response_type: 'token',
+        scope: 'identify'
+      });
+      return `https://discord.com/api/oauth2/authorize?${params.toString()}`;
+    }
+
+    async function handleDiscordCallback() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      if (!accessToken) return false;
+
+      // Получить данные пользователя Discord
+      try {
+        const res = await fetch('https://discord.com/api/users/@me', {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const discordUser = await res.json();
+        if (!discordUser.id) throw new Error('Invalid token');
+
+        // Привязать Discord к текущему пользователю
+        if (currentUser) {
+          const user = users.find(u => u.id === currentUser.id);
+          if (user) {
+            user.discordId = discordUser.id;
+            currentUser.discordId = discordUser.id;
+            sessionStorage.setItem('smlt_currentUser', JSON.stringify(currentUser));
+            saveData();
+            alert(`Discord ${discordUser.username}#${discordUser.discriminator} успешно привязан!`);
+            showPlayerProfile(currentUser.id);
+          }
+        } else {
+          // Если не залогинен — создаём нового пользователя через Discord
+          const existing = users.find(u => u.discordId === discordUser.id);
+          if (existing) {
+            currentUser = { ...existing };
+            sessionStorage.setItem('smlt_currentUser', JSON.stringify(currentUser));
+            updateUI();
+            renderLeaderboard();
+            showPlayerProfile(currentUser.id);
+          } else {
+            // Новый пользователь
+            const newUser = {
+              id: 'u_' + Date.now(),
+              username: discordUser.username,
+              gdlNick: '',
+              discordId: discordUser.id,
+              role: 'user',
+              logs: []
+            };
+            users.push(newUser);
+            saveData();
+            currentUser = { ...newUser };
+            sessionStorage.setItem('smlt_currentUser', JSON.stringify(currentUser));
+            updateUI();
+            renderLeaderboard();
+            showPlayerProfile(currentUser.id);
+          }
+        }
+        window.location.hash = ''; // очистить URL
+        return true;
+      } catch (e) {
+        console.error('Discord auth error', e);
+        return false;
+      }
+    }
+
+    // ---------- АВТОРИЗАЦИЯ (локальная) ----------
+    function login(username) {
+      let user = users.find(u => u.username === username);
+      if (!user) {
+        // создаём нового локального пользователя
+        user = {
+          id: 'u_' + Date.now(),
+          username: username,
+          gdlNick: '',
+          discordId: '',
+          role: 'user',
+          logs: []
+        };
+        users.push(user);
+        saveData();
+      }
+      currentUser = { ...user };
+      sessionStorage.setItem('smlt_currentUser', JSON.stringify(currentUser));
+      updateUI();
+      renderLeaderboard();
+      showPlayerProfile(currentUser.id);
+    }
+
+    function logout() {
+      currentUser = null;
+      sessionStorage.removeItem('smlt_currentUser');
+      updateUI();
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+      document.getElementById('leaderboardPage').classList.add('active-panel');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-page="leaderboard"]').classList.add('active');
+      renderLeaderboard();
+    }
+
+    function updateUI() {
+      const span = document.getElementById('userNameDisplay');
+      const btn = document.getElementById('authBtn');
+      if (currentUser) {
+        span.innerText = currentUser.username;
+        btn.innerText = 'Выйти';
+        btn.onclick = logout;
+      } else {
+        span.innerText = 'Гость';
+        btn.innerText = 'Вход';
+        btn.onclick = () => {
+          const name = prompt('Введите ваш никнейм (GDL)');
+          if (name) login(name);
+        };
+      }
+    }
+
+    // ---------- ДЕМО-ФУНКЦИИ (для тестирования) ----------
+    window.addDemoLevel = () => {
+      const pos = levels.length + 1;
+      levels.push({ id: 'lvl_'+Date.now(), name: `Demo Level ${pos}`, position: pos, author: 'Demo' });
+      saveData();
+      renderLeaderboard();
+    };
+    window.addDemoRecord = () => {
+      if (!currentUser) return;
+      const level = levels[0];
+      if (!level) return;
+      records.push({
+        id: 'rec_'+Date.now(),
+        userId: currentUser.id,
+        levelId: level.id,
+        percent: 100,
+        videoLink: '#',
+        status: 'approved',
+        timestamp: Date.now()
+      });
+      saveData();
+      renderLeaderboard();
+      if (document.getElementById('profilePage').classList.contains('active-panel')) {
+        showPlayerProfile(currentUser.id);
+      }
+    };
+
+    // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+    async function init() {
+      loadData();
+      renderLeaderboard();
+      updateUI();
+
+      // Обработка OAuth колбэка
+      await handleDiscordCallback();
+
+      // Навигация
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const page = btn.dataset.page;
+          document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+          document.getElementById(page + 'Page').classList.add('active-panel');
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (page === 'profile' && currentUser) {
+            showPlayerProfile(currentUser.id);
+          } else if (page === 'profile' && !currentUser) {
+            alert('Сначала войдите (кликните "Вход" в шапке)');
+            document.querySelector('[data-page="leaderboard"]').click();
+          }
+        });
+      });
+
+      document.getElementById('userNameDisplay').onclick = () => {
+        if (currentUser) showPlayerProfile(currentUser.id);
+        else {
+          const name = prompt('Введите ваш никнейм (GDL)');
+          if (name) login(name);
+        }
+      };
+
+      document.getElementById('syncNowBtn').onclick = () => { renderLeaderboard(); };
+
+      // Тема
+      const themeToggle = document.getElementById('themeToggle');
+      const savedTheme = localStorage.getItem('smlt_theme');
+      if (savedTheme === 'light') document.body.classList.add('light');
+      themeToggle.onclick = () => {
+        document.body.classList.toggle('light');
+        localStorage.setItem('smlt_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+      };
+
+      window.showPlayerProfile = showPlayerProfile;
+    }
+
+    init();
+  })();
+</script>
+</body>
+</html>
